@@ -23,7 +23,6 @@ jobs:
 
       - name: Install macOS build dependencies
         run: |
-          brew update
           brew install cmake llvm
 
       - name: Setup PHP ${{ matrix.php }}
@@ -49,18 +48,9 @@ jobs:
           PHP_CONFIG: /opt/homebrew/bin/php-config
           PHP: /opt/homebrew/bin/php
           LIBCLANG_PATH: /opt/homebrew/opt/llvm/lib
-          CLANG_PATH: /opt/homebrew/opt/llvm/bin/clang
-          CC: /opt/homebrew/opt/llvm/bin/clang
-          CXX: /opt/homebrew/opt/llvm/bin/clang++
         run: |
-          SDK_PATH=$(xcrun --sdk macosx --show-sdk-path)
-          echo "SDK_PATH=$SDK_PATH"
-          # Set up environment for bindgen and C compilation
-          export BINDGEN_EXTRA_CLANG_ARGS="-isysroot $SDK_PATH"
-          export CFLAGS="-isysroot $SDK_PATH"
-          export CXXFLAGS="-isysroot $SDK_PATH"
-          export CMAKE_OSX_SYSROOT="$SDK_PATH"
-          # Clean only our crate to ensure fresh build
+          # Use system clang which already knows SDK paths
+          # Only use Homebrew LLVM for libclang (bindgen)
           cargo clean -p php-rnet 2>/dev/null || true
           cargo build --release
 
