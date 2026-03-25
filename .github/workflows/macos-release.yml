@@ -50,9 +50,9 @@ jobs:
           LIBCLANG_PATH: /opt/homebrew/opt/llvm/lib
           CLANG_PATH: /opt/homebrew/opt/llvm/bin/clang
           MACOSX_DEPLOYMENT_TARGET: "14.0"
-          DYLD_LIBRARY_PATH: "/opt/homebrew/opt/php/lib"
         run: |
-          export LDFLAGS="$(php-config --ldflags) $(php-config --libs)"
+          # Link against PHP shared library
+          export RUSTFLAGS="-C link-arg=-undefined -C link-arg=dynamic_lookup"
           cargo clean -p php-rnet 2>/dev/null || true
           cargo build --release
 
