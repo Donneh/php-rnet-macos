@@ -1,0 +1,89 @@
+name: macOS Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build PHP ${{ matrix.php }} extension (macOS arm64)
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install macOS build dependencies
+        run: |
+          brew update
+          brew install cmake llvm
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: ''
+          tools: none
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build extension
+        env:
+          PHP_CONFIG: /opt/homebrew/bin/php-config
+          PHP: /opt/homebrew/bin/php
+          LIBCLANG_PATH: /opt/homebrew/opt/llvm/lib
+        run: cargo build --release
+
+      - name: Rename artifact
+        run: |
+          PHP_VER=$(echo "${{ matrix.php }}" | tr -d '.')
+          cp target/release/librnet.dylib \
+            "librnet-${{ github.ref_name }}-php${PHP_VER}-macos-arm64-nts.dylib"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: librnet-php${{ matrix.php }}-macos
+          path: librnet-*.dylib
+
+  release:
+    name: Create GitHub Release
+    runs-on: macos-14
+    needs: build
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS
+        working-directory: artifacts
+        run: shasum -a 256 librnet-*.dylib > SHA256SUMS
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/librnet-*.dylib
+            artifacts/SHA256SUMS
+          generate_release_notes: true
