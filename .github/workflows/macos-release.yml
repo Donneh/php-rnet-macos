@@ -51,10 +51,15 @@ jobs:
           LIBCLANG_PATH: /opt/homebrew/opt/llvm/lib
           CLANG_PATH: /opt/homebrew/opt/llvm/bin/clang
           CC: /opt/homebrew/opt/llvm/bin/clang
+          CXX: /opt/homebrew/opt/llvm/bin/clang++
         run: |
           SDK_PATH=$(xcrun --sdk macosx --show-sdk-path)
           echo "SDK_PATH=$SDK_PATH"
-          export BINDGEN_EXTRA_CLANG_ARGS="-isysroot $SDK_PATH -resource-dir /opt/homebrew/opt/llvm/lib/clang/19"
+          # Set up environment for bindgen and C compilation
+          export BINDGEN_EXTRA_CLANG_ARGS="-isysroot $SDK_PATH"
+          export CFLAGS="-isysroot $SDK_PATH"
+          export CXXFLAGS="-isysroot $SDK_PATH"
+          export CMAKE_OSX_SYSROOT="$SDK_PATH"
           # Clean only our crate to ensure fresh build
           cargo clean -p php-rnet 2>/dev/null || true
           cargo build --release
