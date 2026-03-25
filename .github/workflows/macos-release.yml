@@ -48,9 +48,9 @@ jobs:
           PHP_CONFIG: /opt/homebrew/bin/php-config
           PHP: /opt/homebrew/bin/php
           LIBCLANG_PATH: /opt/homebrew/opt/llvm/lib
+          CLANG_PATH: /opt/homebrew/opt/llvm/bin/clang
         run: |
-          # Use system clang which already knows SDK paths
-          # Only use Homebrew LLVM for libclang (bindgen)
+          # Use Homebrew clang for bindgen to avoid ARM NEON issues with Xcode 15
           cargo clean -p php-rnet 2>/dev/null || true
           cargo build --release
 
