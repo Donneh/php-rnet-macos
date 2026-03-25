@@ -48,6 +48,9 @@ jobs:
           PHP_CONFIG: /opt/homebrew/bin/php-config
           PHP: /opt/homebrew/bin/php
           LIBCLANG_PATH: /opt/homebrew/opt/llvm/lib
+          CLANG_PATH: /opt/homebrew/opt/llvm/bin/clang
+          CC: /opt/homebrew/opt/llvm/bin/clang
+          BINDGEN_EXTRA_CLANG_ARGS: "-resource-dir /opt/homebrew/opt/llvm/lib/clang/19"
         run: cargo build --release
 
       - name: Rename artifact
