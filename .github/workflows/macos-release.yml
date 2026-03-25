@@ -51,7 +51,7 @@ jobs:
           LIBCLANG_PATH: /opt/homebrew/opt/llvm/lib
           CLANG_PATH: /opt/homebrew/opt/llvm/bin/clang
           CC: /opt/homebrew/opt/llvm/bin/clang
-          BINDGEN_EXTRA_CLANG_ARGS: "-resource-dir /opt/homebrew/opt/llvm/lib/clang/19"
+          BINDGEN_EXTRA_CLANG_ARGS: "-isysroot $(xcrun --sdk macosx --show-sdk-path) -resource-dir /opt/homebrew/opt/llvm/lib/clang/19"
         run: |
           # Clean only our crate to ensure fresh build
           cargo clean -p php-rnet 2>/dev/null || true
